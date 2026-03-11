@@ -1086,35 +1086,27 @@ function highlightChunk(index) {
     if (progressFill) progressFill.style.width = progress + '%';
 }
 
-// 更新已读显示（保留data-pos属性）
+// 更新已读显示（保留拼音和注解属性）
 function updateReadDisplay(readEnd) {
-    const allText = jingpinData[currentJingpin].content;
-    
-    let html = '';
-    
-    for (let i = 0; i < allText.length; i++) {
-        const char = allText[i];
-        if (char === '\n') {
-            html += '<br>';
-        } else if (i < readEnd) {
-            // 已读部分 - 墨绿色
-            html += `<span data-pos="${i}" style="color:#15803d;">${char}</span>`;
-        } else {
-            // 未读部分 - 保持原色
-            html += `<span data-pos="${i}">${char}</span>`;
-        }
-    }
-    
     const jingwenText = document.getElementById('jingwenText');
-    if (jingwenText) {
-        jingwenText.innerHTML = `<p>${html}</p>`;
-        
-        // 调试：确认data-pos元素存在
-        const spans = jingwenText.querySelectorAll('[data-pos]');
-        console.log('updateReadDisplay后，data-pos元素数量:', spans.length);
-    } else {
-        console.log('警告：jingwenText不存在');
-    }
+    if (!jingwenText) return;
+    
+    // 遍历所有带有 data-pos 的 span，只更新颜色，不改变内容
+    const spans = jingwenText.querySelectorAll('[data-pos]');
+    spans.forEach(span => {
+        const pos = parseInt(span.getAttribute('data-pos'));
+        if (pos < readEnd) {
+            // 已读部分 - 墨绿色
+            span.style.color = '#15803d';
+        } else {
+            // 未读部分 - 恢复原色
+            span.style.color = '';
+        }
+    });
+    
+    // 更新进度滑块
+    const allText = jingpinData[currentJingpin].content;
+    updateProgressSlider(readEnd, allText.length);
 }
 
 // 恢复阅读进度
