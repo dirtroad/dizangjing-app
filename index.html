@@ -780,37 +780,70 @@ window.selectJingpin = function(index) {
     // 准备分段数据
     prepareTextChunks(jp.content);
     
-    // 处理文本：先添加注解，再添加拼音，最后添加位置标记
-    let text = jp.content;
-    
-    // 添加注解标记
-    text = addAnnotationsToText(text);
-    
-    // 添加拼音
-    text = addPinyinToText(text);
-    
-    // 为每个可见字符添加位置标记
+    // 处理文本：逐字处理，同时添加拼音、注解和位置标记
+    const text = jp.content;
     let result = '';
-    let pos = 0;
-    let inTag = false;
     
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        
-        if (char === '<') {
-            inTag = true;
-            result += char;
-        } else if (char === '>') {
-            inTag = false;
-            result += char;
-        } else if (inTag) {
-            result += char;
-        } else if (char === '\n') {
+    // 先找出所有需要注解的术语及其位置
+    const termPositions = [];
+    const sortedTerms = Object.keys(annotations).sort((a, b) => b.length - a.length);
+    for (const term of sortedTerms) {
+        let pos = 0;
+        let searchPos = 0;
+        while ((pos = text.indexOf(term, searchPos)) !== -1) {
+            termPositions.push({
+                term: term,
+                start: pos,
+                end: pos + term.length,
+                info: annotations[term]
+            });
+            searchPos = pos + 1;
+        }
+    }
+    
+    // 按开始位置排序
+    termPositions.sort((a, b) => a.start - b.start);
+    
+    // 逐字处理
+    let i = 0;
+    while (i < text.length) {
+        if (text[i] === '\n') {
             result += '<br>';
-            pos++;
+            i++;
+            continue;
+        }
+        
+        // 检查当前位置是否在某个术语中
+        const termAtPos = termPositions.find(t => i >= t.start && i < t.end);
+        
+        if (termAtPos && i === termAtPos.start) {
+            // 这是术语的开始
+            const term = termAtPos.term;
+            const termText = text.substr(termAtPos.start, term.length);
+            const pinyin = wordPinyin[term] || termAtPos.info.pinyin;
+            
+            result += `<span class="term" data-term="${term}" data-pinyin="${termAtPos.info.pinyin}" data-note="${termAtPos.info.note}" data-pos="${i}">`;
+            result += `<ruby>${termText}<rt>${pinyin}</rt></ruby>`;
+            result += '</span>';
+            
+            i += term.length;
+        } else if (!termAtPos) {
+            // 普通字符
+            const char = text[i];
+            if (/[\u4e00-\u9fa5]/.test(char)) {
+                const py = charPinyinFull[char];
+                if (py) {
+                    result += `<span data-pos="${i}"><ruby>${char}<rt>${py}</rt></ruby></span>`;
+                } else {
+                    result += `<span data-pos="${i}">${char}</span>`;
+                }
+            } else {
+                result += `<span data-pos="${i}">${char}</span>`;
+            }
+            i++;
         } else {
-            result += `<span data-pos="${pos}">${char}</span>`;
-            pos++;
+            // 在术语中间，跳过（已经在上面处理了）
+            i++;
         }
     }
     
