@@ -811,35 +811,6 @@ window.selectJingpin = function(index) {
 function setupClickToJump() {
     // 暂时禁用
 }
-        
-        // 停止当前播放
-        try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e) {}
-        
-        // 准备分段数据
-        prepareTextChunks(allText);
-        
-        // 找到包含点击位置的分段
-        let foundChunkIndex = 0;
-        for (let j = 0; j < textChunks.length; j++) {
-            if (textChunks[j] && pos >= textChunks[j].start && pos < textChunks[j].end) {
-                foundChunkIndex = j;
-                break;
-            }
-        }
-        
-        // 更新进度
-        updateProgressSlider(pos, allText.length);
-        
-        const readProgress = JSON.parse(localStorage.getItem('dizangjing_read') || '{}');
-        readProgress[currentJingpin] = pos;
-        localStorage.setItem('dizangjing_read', JSON.stringify(readProgress));
-        
-        currentChunkIndex = foundChunkIndex;
-        isPlaying = true;
-        showNotification('✅ 从此处开始播放');
-        playNextChunk();
-    });
-}
 
 // 准备文本分段
 function prepareTextChunks(text) {
