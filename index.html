@@ -1308,7 +1308,13 @@ function showNotification(message) {
 
 // 等待DOM加载完成后再初始化
 document.addEventListener('DOMContentLoaded', function() {
-    init();
+    alert('页面加载完成，开始初始化...');
+    try {
+        init();
+        alert('初始化成功！');
+    } catch (e) {
+        alert('初始化失败：' + e.message);
+    }
 });
 </script>
 </body>
