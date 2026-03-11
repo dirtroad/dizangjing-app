@@ -627,25 +627,31 @@ function isWechat() {
 
 // 初始化
 function init() {
-    // 检测微信，显示提示
-    if (isWechat()) {
-        document.getElementById('weixinTip').classList.add('show');
+    try {
+        // 检测微信，显示提示
+        if (isWechat()) {
+            const weixinTip = document.getElementById('weixinTip');
+            if (weixinTip) weixinTip.classList.add('show');
+        }
+        
+        // 初始化点击跳转功能（只绑定一次）
+        setupClickToJump();
+        
+        renderJingpinSelector();
+        updateStats();
+        checkDailyVisit();
+        setupTermClick();
+        setupEventListeners();
+        
+        // iOS 兼容：页面加载后预热语音引擎
+        document.addEventListener('click', function initSpeech() {
+            warmupSpeech();
+            document.removeEventListener('click', initSpeech);
+        }, { once: true });
+    } catch (e) {
+        console.error('初始化错误:', e);
+        alert('初始化错误: ' + e.message);
     }
-    
-    // 初始化点击跳转功能（只绑定一次）
-    setupClickToJump();
-    
-    renderJingpinSelector();
-    updateStats();
-    checkDailyVisit();
-    setupTermClick();
-    setupEventListeners();
-    
-    // iOS 兼容：页面加载后预热语音引擎
-    document.addEventListener('click', function initSpeech() {
-        warmupSpeech();
-        document.removeEventListener('click', initSpeech);
-    }, { once: true });
 }
 
 // 设置事件监听器（使用事件委托，更可靠）
@@ -731,10 +737,13 @@ function closeNotePopup() {
 // 渲染品目选择器
 function renderJingpinSelector() {
     const container = document.getElementById('jingpinSelector');
+    if (!container) {
+        console.error('jingpinSelector 容器不存在');
+        return;
+    }
     
     container.innerHTML = jingpinData.map((jp, index) => {
         const isCompleted = stats.completedJingpins.includes(index);
-        const isMainJingpin = index >= 5 && index <= 17; // 正文13品
         return `<button class="jingpin-btn ${isCompleted ? 'completed' : ''}" data-index="${index}"><span class="num">${index + 1}.</span> ${jp.title}</button>`;
     }).join('');
     
@@ -1030,7 +1039,8 @@ function highlightChunk(index) {
     
     // 更新进度条
     const progress = ((index + 1) / textChunks.length) * 100;
-    document.getElementById('progressFill').style.width = progress + '%';
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) progressFill.style.width = progress + '%';
 }
 
 // 更新已读显示（保留data-pos属性）
@@ -1085,7 +1095,8 @@ function escapeHtml(text) {
 
 function clearAllHighlights() {
     // 重置进度条
-    document.getElementById('progressFill').style.width = '0%';
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) progressFill.style.width = '0%';
 }
 
 // 暂停音频
@@ -1132,8 +1143,10 @@ window.seekToPosition = function(percent) {
     
     // 更新显示
     updateReadDisplay(targetPosition);
-    document.getElementById('readPositionText').textContent = percent + '%';
-    document.getElementById('progressFill').style.width = percent + '%';
+    const readPosText = document.getElementById('readPositionText');
+    const progressFill = document.getElementById('progressFill');
+    if (readPosText) readPosText.textContent = percent + '%';
+    if (progressFill) progressFill.style.width = percent + '%';
     
     // 保存进度
     const readProgress = JSON.parse(localStorage.getItem('dizangjing_read') || '{}');
@@ -1217,27 +1230,28 @@ function getReadCount(jingpinIndex) {
 // 更新进度
 function updateProgress() {
     const progress = (stats.completedJingpins.length / jingpinData.length) * 100;
-    document.getElementById('progressFill').style.width = progress + '%';
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) progressFill.style.width = progress + '%';
 }
 
 // 更新统计
 function updateStats() {
-    document.getElementById('totalDays').textContent = stats.totalDays;
-    document.getElementById('completedJingpins').textContent = stats.completedJingpins.length + '/' + jingpinData.length;
-    document.getElementById('currentStreak').textContent = stats.currentStreak;
+    const totalDaysEl = document.getElementById('totalDays');
+    const completedEl = document.getElementById('completedJingpins');
+    const streakEl = document.getElementById('currentStreak');
+    
+    if (totalDaysEl) totalDaysEl.textContent = stats.totalDays;
+    if (completedEl) completedEl.textContent = stats.completedJingpins.length + '/' + jingpinData.length;
+    if (streakEl) streakEl.textContent = stats.currentStreak;
     
     // 获取总诵读遍数
     const totalReads = parseInt(localStorage.getItem('dizangjing_total_reads') || '0');
     
-    // 显示总诵读遍数（首页和统计页）
+    // 显示总诵读遍数
     const totalReadsEl = document.getElementById('totalReads');
-    if (totalReadsEl) {
-        totalReadsEl.textContent = totalReads;
-    }
+    if (totalReadsEl) totalReadsEl.textContent = totalReads;
     const totalReadsMainEl = document.getElementById('totalReadsMain');
-    if (totalReadsMainEl) {
-        totalReadsMainEl.textContent = totalReads;
-    }
+    if (totalReadsMainEl) totalReadsMainEl.textContent = totalReads;
     
     updateProgress();
 }
