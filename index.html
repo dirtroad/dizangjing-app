@@ -780,21 +780,42 @@ window.selectJingpin = function(index) {
     // 准备分段数据
     prepareTextChunks(jp.content);
     
-    // 为每个字符添加位置标记
-    let processedText = '';
-    const text = jp.content;
+    // 处理文本：先添加注解，再添加拼音，最后添加位置标记
+    let text = jp.content;
+    
+    // 添加注解标记
+    text = addAnnotationsToText(text);
+    
+    // 添加拼音
+    text = addPinyinToText(text);
+    
+    // 为每个可见字符添加位置标记
+    let result = '';
+    let pos = 0;
+    let inTag = false;
     
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
-        if (char === '\n') {
-            processedText += '<br>';
+        
+        if (char === '<') {
+            inTag = true;
+            result += char;
+        } else if (char === '>') {
+            inTag = false;
+            result += char;
+        } else if (inTag) {
+            result += char;
+        } else if (char === '\n') {
+            result += '<br>';
+            pos++;
         } else {
-            processedText += `<span data-pos="${i}">${char}</span>`;
+            result += `<span data-pos="${pos}">${char}</span>`;
+            pos++;
         }
     }
     
     const container = document.getElementById('jingwenContent');
-    container.innerHTML = `<div class="jingwen-text" id="jingwenText"><p>${processedText}</p></div>`;
+    container.innerHTML = `<div class="jingwen-text" id="jingwenText"><p>${result}</p></div>`;
     document.getElementById('jingwenContainer').classList.add('active');
     document.getElementById('jingwenContainer').scrollIntoView({ behavior: 'smooth' });
     
@@ -807,9 +828,57 @@ window.selectJingpin = function(index) {
     }, 100);
 }
 
-// 设置点击跳转功能（暂时禁用，调试中）
+// 设置点击跳转功能
 function setupClickToJump() {
-    // 暂时禁用
+    document.addEventListener('click', function(e) {
+        // 检查是否点击的是带有 data-pos 属性的元素
+        let target = e.target;
+        let pos = null;
+        
+        // 向上查找带有 data-pos 的元素
+        for (let i = 0; i < 5 && target; i++) {
+            if (target.getAttribute && target.getAttribute('data-pos')) {
+                pos = parseInt(target.getAttribute('data-pos'));
+                break;
+            }
+            target = target.parentElement;
+        }
+        
+        // 如果没有找到 data-pos，返回
+        if (pos === null || isNaN(pos)) return;
+        
+        // 检查是否已经选择了品目
+        if (currentJingpin === -1) return;
+        
+        const allText = jingpinData[currentJingpin].content;
+        
+        // 停止当前播放
+        try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e) {}
+        
+        // 准备分段数据
+        prepareTextChunks(allText);
+        
+        // 找到包含点击位置的分段
+        let foundChunkIndex = 0;
+        for (let j = 0; j < textChunks.length; j++) {
+            if (textChunks[j] && pos >= textChunks[j].start && pos < textChunks[j].end) {
+                foundChunkIndex = j;
+                break;
+            }
+        }
+        
+        // 更新进度
+        updateProgressSlider(pos, allText.length);
+        
+        const readProgress = JSON.parse(localStorage.getItem('dizangjing_read') || '{}');
+        readProgress[currentJingpin] = pos;
+        localStorage.setItem('dizangjing_read', JSON.stringify(readProgress));
+        
+        currentChunkIndex = foundChunkIndex;
+        isPlaying = true;
+        showNotification('✅ 从此处开始播放');
+        playNextChunk();
+    });
 }
 
 // 准备文本分段
