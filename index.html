@@ -1285,18 +1285,25 @@ function saveStats() {
 // 切换标签页
 function showTab(tabName) {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById('readTab').style.display = tabName === 'read' ? 'block' : 'none';
-    document.getElementById('statsTab').style.display = tabName === 'stats' ? 'block' : 'none';
-    document.getElementById('aboutTab').style.display = tabName === 'about' ? 'block' : 'none';
+    if (event && event.target) event.target.classList.add('active');
+    
+    const readTab = document.getElementById('readTab');
+    const statsTab = document.getElementById('statsTab');
+    const aboutTab = document.getElementById('aboutTab');
+    
+    if (readTab) readTab.style.display = tabName === 'read' ? 'block' : 'none';
+    if (statsTab) statsTab.style.display = tabName === 'stats' ? 'block' : 'none';
+    if (aboutTab) aboutTab.style.display = tabName === 'about' ? 'block' : 'none';
 }
 
 // 显示通知
 function showNotification(message) {
     const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => notification.classList.remove('show'), 3000);
+    if (notification) {
+        notification.textContent = message;
+        notification.classList.add('show');
+        setTimeout(() => notification.classList.remove('show'), 3000);
+    }
 }
 
 // 等待DOM加载完成后再初始化
