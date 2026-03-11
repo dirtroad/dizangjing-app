@@ -791,57 +791,9 @@ window.selectJingpin = function(index) {
     }, 100);
 }
 
-// 设置点击跳转功能
+// 设置点击跳转功能（暂时禁用，调试中）
 function setupClickToJump() {
-    document.addEventListener('click', function(e) {
-        // 检查是否点击的是带有 data-pos 属性的元素
-        let target = e.target;
-        let pos = null;
-        
-        // 向上查找带有 data-pos 的元素
-        for (let i = 0; i < 5 && target; i++) {
-            if (target.getAttribute && target.getAttribute('data-pos')) {
-                pos = parseInt(target.getAttribute('data-pos'));
-                break;
-            }
-            target = target.parentElement;
-        }
-        
-        // 如果没有找到 data-pos，返回
-        if (pos === null || isNaN(pos)) return;
-        
-        // 检查是否已经选择了品目
-        if (currentJingpin === -1) return;
-        
-        const allText = jingpinData[currentJingpin].content;
-        
-        // 停止当前播放
-        try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e) {}
-        
-        // 准备分段数据
-        prepareTextChunks(allText);
-        
-        // 找到包含点击位置的分段
-        let foundChunkIndex = 0;
-        for (let j = 0; j < textChunks.length; j++) {
-            if (textChunks[j] && pos >= textChunks[j].start && pos < textChunks[j].end) {
-                foundChunkIndex = j;
-                break;
-            }
-        }
-        
-        // 更新进度
-        updateProgressSlider(pos, allText.length);
-        
-        const readProgress = JSON.parse(localStorage.getItem('dizangjing_read') || '{}');
-        readProgress[currentJingpin] = pos;
-        localStorage.setItem('dizangjing_read', JSON.stringify(readProgress));
-        
-        currentChunkIndex = foundChunkIndex;
-        isPlaying = true;
-        showNotification('✅ 从此处开始播放');
-        playNextChunk();
-    });
+    // 暂时禁用
 }
         
         // 停止当前播放
