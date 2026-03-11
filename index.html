@@ -652,20 +652,13 @@ function init() {
 function setupEventListeners() {
     // 品目选择器 - 使用事件委托
     const selector = document.getElementById('jingpinSelector');
-    selector.addEventListener('click', function(e) {
-        const btn = e.target.closest('.jingpin-btn');
-        if (btn) {
-            const index = parseInt(btn.getAttribute('data-index'));
-            selectJingpin(index);
-        }
-    });
-    
-    // 测试按钮
-    const testBtn = document.getElementById('testBtn');
-    if (testBtn) {
-        testBtn.addEventListener('click', function() {
-            alert('✅ 点击事件正常！现在试试点击品目按钮');
-            warmupSpeech();
+    if (selector) {
+        selector.addEventListener('click', function(e) {
+            const btn = e.target.closest('.jingpin-btn');
+            if (btn) {
+                const index = parseInt(btn.getAttribute('data-index'));
+                selectJingpin(index);
+            }
         });
     }
     
@@ -677,36 +670,47 @@ function setupEventListeners() {
     });
     
     // 播放控制按钮
-    document.getElementById('playBtn').addEventListener('click', playAudio);
-    document.getElementById('pauseBtn').addEventListener('click', pauseAudio);
-    document.getElementById('stopBtn').addEventListener('click', stopAudio);
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    
+    if (playBtn) playBtn.addEventListener('click', playAudio);
+    if (pauseBtn) pauseBtn.addEventListener('click', pauseAudio);
+    if (stopBtn) stopBtn.addEventListener('click', stopAudio);
     
     // 语速选择
-    document.getElementById('speedSelect').addEventListener('change', changeSpeed);
+    const speedSelect = document.getElementById('speedSelect');
+    if (speedSelect) speedSelect.addEventListener('change', changeSpeed);
     
     // 拼音开关
-    document.getElementById('togglePinyin').addEventListener('change', togglePinyinDisplay);
+    const togglePinyin = document.getElementById('togglePinyin');
+    if (togglePinyin) togglePinyin.addEventListener('change', togglePinyinDisplay);
     
     // 注解高亮开关
-    document.getElementById('toggleAnnotate').addEventListener('change', toggleAnnotationHighlight);
+    const toggleAnnotate = document.getElementById('toggleAnnotate');
+    if (toggleAnnotate) toggleAnnotate.addEventListener('change', toggleAnnotationHighlight);
     
     // 进度滑块
-    document.getElementById('readPositionSlider').addEventListener('input', function() {
+    const slider = document.getElementById('readPositionSlider');
+    if (slider) slider.addEventListener('input', function() {
         seekToPosition(this.value);
     });
 }
 
 // 设置词汇点击事件
 function setupTermClick() {
-    document.getElementById('jingwenContent').addEventListener('click', function(e) {
-        if (e.target.classList.contains('term') || e.target.closest('.term')) {
-            const term = e.target.classList.contains('term') ? e.target : e.target.closest('.term');
-            const termText = term.getAttribute('data-term');
-            const pinyin = term.getAttribute('data-pinyin');
-            const note = term.getAttribute('data-note');
-            showNotePopup(termText, pinyin, note);
-        }
-    });
+    const jingwenContent = document.getElementById('jingwenContent');
+    if (jingwenContent) {
+        jingwenContent.addEventListener('click', function(e) {
+            if (e.target.classList.contains('term') || e.target.closest('.term')) {
+                const term = e.target.classList.contains('term') ? e.target : e.target.closest('.term');
+                const termText = term.getAttribute('data-term');
+                const pinyin = term.getAttribute('data-pinyin');
+                const note = term.getAttribute('data-note');
+                showNotePopup(termText, pinyin, note);
+            }
+        });
+    }
 }
 
 // 显示注解弹窗
