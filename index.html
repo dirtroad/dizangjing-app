@@ -1309,14 +1309,26 @@ function showNotification(message) {
 
 // 等待DOM加载完成后再初始化
 document.addEventListener('DOMContentLoaded', function() {
-    alert('页面加载完成，开始初始化...');
+    alert('DOMContentLoaded触发');
+    try {
+        init();
+        alert('初始化成功！');
+    } catch (e) {
+        alert('初始化失败：' + e.message);
+        console.error('初始化错误:', e);
+    }
+});
+
+// 备用：如果DOMContentLoaded已经触发，立即执行
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    alert('文档已加载，立即初始化');
     try {
         init();
         alert('初始化成功！');
     } catch (e) {
         alert('初始化失败：' + e.message);
     }
-});
+}
 </script>
 </body>
 </html>
