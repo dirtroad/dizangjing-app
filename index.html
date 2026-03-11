@@ -8,16 +8,7 @@
 <meta name="theme-color" content="#667eea">
 <title>地藏菩萨本愿经（注音注解版）</title>
 <script>
-alert('脚本开始执行');
-window.onload = function() {
-    alert('onload触发');
-    try {
-        init();
-        alert('初始化成功！');
-    } catch (e) {
-        alert('初始化失败：' + e.message);
-    }
-};
+alert('脚本1：开始执行');
 </script>
 <style>
 /* 微信提示 */
@@ -1318,27 +1309,13 @@ function showNotification(message) {
     }
 }
 
-// 等待DOM加载完成后再初始化
-document.addEventListener('DOMContentLoaded', function() {
-    alert('DOMContentLoaded触发');
-    try {
-        init();
-        alert('初始化成功！');
-    } catch (e) {
-        alert('初始化失败：' + e.message);
-        console.error('初始化错误:', e);
-    }
-});
-
-// 备用：如果DOMContentLoaded已经触发，立即执行
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    alert('文档已加载，立即初始化');
-    try {
-        init();
-        alert('初始化成功！');
-    } catch (e) {
-        alert('初始化失败：' + e.message);
-    }
+// 立即初始化（不等待事件）
+alert('脚本2：准备初始化');
+try {
+    init();
+    alert('初始化成功！');
+} catch (e) {
+    alert('初始化失败：' + e.message);
 }
 </script>
 </body>
